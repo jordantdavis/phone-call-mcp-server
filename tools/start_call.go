@@ -31,12 +31,12 @@ func StartOutboundCall(ctx context.Context, req *mcp.CallToolRequest, input star
 
 	client := clients.NewTwilioClient()
 
-	_, err := client.StartCall(phoneNumber)
+	callId, err := client.StartCall(phoneNumber)
 	if err != nil {
 		return nil, startOutboundCallOutput{}, err
 	}
 
-	result := fmt.Sprintf("Call successfully started with %s.", phoneNumber)
+	result := fmt.Sprintf("Call with ID %s successfully started with %s.", callId, phoneNumber)
 
 	return nil, startOutboundCallOutput{result, nil}, nil
 }
