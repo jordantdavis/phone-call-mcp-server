@@ -41,6 +41,6 @@ func StartOutboundCall(ctx context.Context, req *mcp.CallToolRequest, input star
 	return nil, startOutboundCallOutput{result, nil}, nil
 }
 
-func AddToolStartOutboundCall(server *mcp.Server) {
+func AddToolStartCall(server *mcp.Server) {
 	mcp.AddTool(server, startOutboundCallDef, StartOutboundCall)
 }
