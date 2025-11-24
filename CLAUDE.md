@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Overview
 
 This is a Model Context Protocol (MCP) server implementation in Go that provides phone call capabilities through Twilio. The server exposes two tools:
-- `StartOutboundCall`: Initiates outbound phone calls
+- `StartCall`: Initiates outbound phone calls with optional DTMF sequence
 - `EndCall`: Ends active phone calls by call ID
 
 ## Architecture
@@ -13,7 +13,7 @@ This is a Model Context Protocol (MCP) server implementation in Go that provides
 The codebase follows a simple three-package structure:
 
 - **main package** (`main.go`): Entry point that creates the MCP server and registers phone call tools using stdio transport
-- **tools package** (`tools/`): Defines MCP tool interfaces (`StartOutboundCall`, `EndCall`), including input/output schemas and tool handlers
+- **tools package** (`tools/`): Defines MCP tool interfaces (`StartCall`, `EndCall`), including input/output schemas and tool handlers
 - **clients package** (`clients/`): Contains phone call client interfaces and implementations:
   - `phone_caller.go`: Defines `CallStarter` and `CallEnder` interfaces
   - `twilio.go`: Implements Twilio client with `StartCall()` and `EndCall()` methods, wraps the Twilio SDK, and handles authentication via environment variables
@@ -48,14 +48,20 @@ go build -o phone-call-mcp-server
 
 **Install as MCP server in Claude:**
 ```bash
-./scripts/install_mcp.sh
+./scripts/cc_install.sh
 ```
 This registers the server with Claude CLI to run via `go run .` with required environment variables.
 
 **Uninstall MCP server:**
 ```bash
-./scripts/uninstall_mcp.sh
+./scripts/cc_uninstall.sh
 ```
+
+**Test with MCP Inspector:**
+```bash
+./scripts/inspect.sh
+```
+Runs the MCP inspector (requires `@modelcontextprotocol/inspector` via npx) for interactive testing of the server tools.
 
 **Set environment variables (template):**
 ```bash
@@ -64,10 +70,12 @@ source scripts/set_env.sh  # After editing with actual values
 
 ## Key Implementation Details
 
+- `StartCall` accepts a `phoneNumber` and optional `dtfmSequence` parameter (comma-separated digits like "1,2,3")
+- DTMF sequences are processed by `adaptDtfmSequence()` (`clients/twilio.go:78-87`) which strips commas and sends the digits after call connection via Twilio's `SetSendDigits()`
 - `StartCall` returns a call ID (Twilio SID) that can be used with `EndCall` to terminate the call
-- The server currently plays hold music when calls connect (`clients/twilio.go:39`) via a Twilio TwiML URL
-- `EndCall` uses Twilio's UpdateCall API with status "completed" to terminate active calls (`clients/twilio.go:46-53`)
-- Phone number validation is not yet implemented (see TODOs in `clients/twilio.go:14,34`)
+- The server currently plays hold music when calls connect (`clients/twilio.go:42`) via a Twilio TwiML URL
+- `EndCall` uses Twilio's UpdateCall API with status "completed" to terminate active calls (`clients/twilio.go:59-66`)
+- Phone number validation is not yet implemented (see TODOs in `clients/twilio.go:17,37`)
 - The Twilio client is created fresh for each tool invocation rather than being reused
 - Tool handlers return `(*mcp.CallToolResult, outputStruct, error)` - the first return value is currently unused (nil)
 - The `clients/phone_caller.go` defines interfaces (`CallStarter`, `CallEnder`) that allow for different phone call provider implementations
