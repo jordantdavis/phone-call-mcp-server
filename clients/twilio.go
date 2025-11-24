@@ -1,8 +1,11 @@
 package clients
 
 import (
+	"errors"
+	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	twilio "github.com/twilio/twilio-go"
 	twilioApi "github.com/twilio/twilio-go/rest/api/v2010"
@@ -30,13 +33,23 @@ func NewTwilioClient() *TwilioClient {
 	}
 }
 
-func (c *TwilioClient) StartCall(toNumber string) (string, error) {
+func (c *TwilioClient) StartCall(toNumber string, dtfmSeq *string) (string, error) {
 	// TODO: validate toNumber as phone number
 
 	params := &twilioApi.CreateCallParams{}
 	params.SetTo(toNumber)
 	params.SetFrom(fromNumber)
 	params.SetUrl("http://twimlets.com/holdmusic?Bucket=com.twilio.music.ambient")
+
+	digits, err := adaptDtfmSequence(dtfmSeq)
+	if err != nil {
+		errorMessage := fmt.Sprintf("TwilioClient#StartCall | Failed to adapter DTFM sequence %s.", *dtfmSeq)
+		return "", errors.New(errorMessage)
+	}
+
+	if digits != nil {
+		params.SetSendDigits(*digits)
+	}
 
 	resp, err := c.client.Api.CreateCall(params)
 
@@ -60,4 +73,15 @@ func getEnvValueOrExit(key string) string {
 	}
 
 	return value
+}
+
+func adaptDtfmSequence(dtfmSeq *string) (*string, error) {
+	if dtfmSeq == nil {
+		return nil, nil
+	}
+
+	splitSeq := strings.Split(*dtfmSeq, ",")
+	joinedSeq := strings.Join(splitSeq, "")
+
+	return &joinedSeq, nil
 }

@@ -14,7 +14,8 @@ var startOutboundCallDef = &mcp.Tool{
 }
 
 type startOutboundCallInput struct {
-	PhoneNumber string `json:"phoneNumber" jsonschema:"The phone number to dial out to."`
+	PhoneNumber  string `json:"phoneNumber" jsonschema:"The phone number to dial out to."`
+	DtfmSequence string `json:"dtfmSequence" jsonschema:"The sequence of digits to send after the call connects."`
 }
 
 type startOutboundCallOutput struct {
@@ -28,10 +29,11 @@ func StartOutboundCall(ctx context.Context, req *mcp.CallToolRequest, input star
 	error,
 ) {
 	phoneNumber := input.PhoneNumber
+	dtfmSeq := input.DtfmSequence
 
 	client := clients.NewTwilioClient()
 
-	callId, err := client.StartCall(phoneNumber)
+	callId, err := client.StartCall(phoneNumber, &dtfmSeq)
 	if err != nil {
 		return nil, startOutboundCallOutput{}, err
 	}

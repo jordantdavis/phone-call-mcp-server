@@ -1,7 +1,7 @@
 package clients
 
 type CallStarter interface {
-	StartCall(phoneNumber string) (string, error)
+	StartCall(phoneNumber string, dtfmSeq *string) (string, error)
 }
 
 type CallEnder interface {
