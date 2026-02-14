@@ -36,7 +36,7 @@ claude mcp add --transport stdio \
   --env TWILIO_ACCOUNT_SID=your_sid \
   --env TWILIO_AUTH_TOKEN=your_token \
   --env TWILIO_FROM_NUMBER=your_number \
-  phone-call -- npx -y phone-call-mcp-server
+  phone-call -- npx github:jordantdavis/phone-call-mcp-server
 ```
 
 ## Development
