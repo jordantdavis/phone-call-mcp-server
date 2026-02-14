@@ -9,6 +9,7 @@
   },
   "scripts": {
     "build": "esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --banner:js='#!/usr/bin/env node' --packages=external",
+    "prepare": "npm run build",
     "check": "npm run lint && npm run format:check",
     "dev": "tsx src/index.ts",
     "format": "oxfmt src/",
