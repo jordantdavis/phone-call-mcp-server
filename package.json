@@ -18,6 +18,7 @@
     "lint": "oxlint src/",
     "lint:fix": "oxlint --fix src/",
     "start": "npm run build && node dist/index.js",
+    "test": "vitest run --coverage",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [],
@@ -26,11 +27,13 @@
   "devDependencies": {
     "@modelcontextprotocol/inspector": "^0.20.0",
     "@types/node": "^25.2.3",
+    "@vitest/coverage-v8": "^4.0.18",
     "esbuild": "^0.27.3",
     "oxfmt": "^0.32.0",
     "oxlint": "^1.47.0",
     "tsx": "^4.19.4",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
