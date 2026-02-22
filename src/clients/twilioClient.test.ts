@@ -20,21 +20,21 @@ describe("loadTwilioConfig", () => {
   it("returns config when all env vars are set", () => {
     vi.stubEnv("TWILIO_ACCOUNT_SID", "test-sid");
     vi.stubEnv("TWILIO_AUTH_TOKEN", "test-token");
-    vi.stubEnv("TWILIO_FROM_NUMBER", "+15551234567");
+    vi.stubEnv("TWILIO_FROM_NUMBER", "5551234567");
 
     const config = loadTwilioConfig();
 
     expect(config).toEqual({
       accountSid: "test-sid",
       authToken: "test-token",
-      fromNumber: "+15551234567",
+      fromNumber: "5551234567",
     });
   });
 
   it("throws when TWILIO_ACCOUNT_SID is missing", () => {
     vi.stubEnv("TWILIO_ACCOUNT_SID", "");
     vi.stubEnv("TWILIO_AUTH_TOKEN", "test-token");
-    vi.stubEnv("TWILIO_FROM_NUMBER", "+15551234567");
+    vi.stubEnv("TWILIO_FROM_NUMBER", "5551234567");
 
     expect(() => loadTwilioConfig()).toThrow(
       "Required environment variable TWILIO_ACCOUNT_SID is not set.",
@@ -44,7 +44,7 @@ describe("loadTwilioConfig", () => {
   it("throws when TWILIO_AUTH_TOKEN is missing", () => {
     vi.stubEnv("TWILIO_ACCOUNT_SID", "test-sid");
     vi.stubEnv("TWILIO_AUTH_TOKEN", "");
-    vi.stubEnv("TWILIO_FROM_NUMBER", "+15551234567");
+    vi.stubEnv("TWILIO_FROM_NUMBER", "5551234567");
 
     expect(() => loadTwilioConfig()).toThrow(
       "Required environment variable TWILIO_AUTH_TOKEN is not set.",
@@ -72,7 +72,7 @@ describe("TwilioClient.startCall", () => {
     const client = new TwilioClient({
       accountSid: "test-sid",
       authToken: "test-token",
-      fromNumber: "+15551234567",
+      fromNumber: "5551234567",
     });
 
     const sid = await client.startCall("5551234567");
@@ -80,7 +80,7 @@ describe("TwilioClient.startCall", () => {
     expect(sid).toBe("CA123");
     expect(mockCreate).toHaveBeenCalledWith({
       to: "5551234567",
-      from: "+15551234567",
+      from: "5551234567",
       url: "http://twimlets.com/holdmusic?Bucket=com.twilio.music.ambient",
     });
   });
@@ -90,7 +90,7 @@ describe("TwilioClient.startCall", () => {
     const client = new TwilioClient({
       accountSid: "test-sid",
       authToken: "test-token",
-      fromNumber: "+15551234567",
+      fromNumber: "5551234567",
     });
 
     const sid = await client.startCall("5551234567", "1,2,3");
@@ -98,7 +98,7 @@ describe("TwilioClient.startCall", () => {
     expect(sid).toBe("CA456");
     expect(mockCreate).toHaveBeenCalledWith({
       to: "5551234567",
-      from: "+15551234567",
+      from: "5551234567",
       url: "http://twimlets.com/holdmusic?Bucket=com.twilio.music.ambient",
       sendDigits: "123",
     });
@@ -115,7 +115,7 @@ describe("TwilioClient.endCall", () => {
     const client = new TwilioClient({
       accountSid: "test-sid",
       authToken: "test-token",
-      fromNumber: "+15551234567",
+      fromNumber: "5551234567",
     });
 
     await client.endCall("CA123");
