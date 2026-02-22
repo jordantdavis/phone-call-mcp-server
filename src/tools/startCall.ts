@@ -1,6 +1,6 @@
 import type { McpServer, ToolCallback } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { TwilioClient } from "../clients/twilioClient";
+import type { StartCallClient } from "../clients/twilioClient";
 
 const inputSchema = {
   phoneNumber: z
@@ -16,24 +16,23 @@ const inputSchema = {
     ),
 };
 
-const handler: ToolCallback<typeof inputSchema> = async ({ phoneNumber, dtmfSequence }) => {
-  try {
-    const client = new TwilioClient();
-    const callerId = await client.startCall(phoneNumber, dtmfSequence);
-    const result = { callerId };
-    return {
-      content: [{ type: "text", text: `Call started with ID: ${callerId}` }],
-      structuredContent: result,
-    };
-  } catch {
-    return {
-      content: [{ type: "text", text: "Failed to start call." }],
-      isError: true,
-    };
-  }
-};
+export function registerStartCallTool(server: McpServer, client: StartCallClient): void {
+  const handler: ToolCallback<typeof inputSchema> = async ({ phoneNumber, dtmfSequence }) => {
+    try {
+      const callerId = await client.startCall(phoneNumber, dtmfSequence);
+      const result = { callerId };
+      return {
+        content: [{ type: "text", text: `Call started with ID: ${callerId}` }],
+        structuredContent: result,
+      };
+    } catch {
+      return {
+        content: [{ type: "text", text: "Failed to start call." }],
+        isError: true,
+      };
+    }
+  };
 
-export function registerStartCallTool(server: McpServer): void {
   server.registerTool(
     "StartCall",
     {

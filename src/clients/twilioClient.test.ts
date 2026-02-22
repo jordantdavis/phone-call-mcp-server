@@ -1,4 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { loadTwilioConfig, TwilioClient } from "./twilioClient";
 
 const mockCreate = vi.fn();
 const mockUpdate = vi.fn();
@@ -11,58 +12,68 @@ vi.mock("twilio", () => ({
   }),
 }));
 
-describe("TwilioClient", () => {
-  beforeEach(() => {
+describe("loadTwilioConfig", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("returns config when all env vars are set", () => {
     vi.stubEnv("TWILIO_ACCOUNT_SID", "test-sid");
     vi.stubEnv("TWILIO_AUTH_TOKEN", "test-token");
     vi.stubEnv("TWILIO_FROM_NUMBER", "+15551234567");
+
+    const config = loadTwilioConfig();
+
+    expect(config).toEqual({
+      accountSid: "test-sid",
+      authToken: "test-token",
+      fromNumber: "+15551234567",
+    });
   });
 
-  afterEach(() => {
-    vi.unstubAllEnvs();
-    vi.resetModules();
-    vi.clearAllMocks();
-  });
-
-  it("throws when TWILIO_ACCOUNT_SID is missing", async () => {
+  it("throws when TWILIO_ACCOUNT_SID is missing", () => {
     vi.stubEnv("TWILIO_ACCOUNT_SID", "");
-    await expect(() => import("./twilioClient")).rejects.toThrow(
+    vi.stubEnv("TWILIO_AUTH_TOKEN", "test-token");
+    vi.stubEnv("TWILIO_FROM_NUMBER", "+15551234567");
+
+    expect(() => loadTwilioConfig()).toThrow(
       "Required environment variable TWILIO_ACCOUNT_SID is not set.",
     );
   });
 
-  it("throws when TWILIO_AUTH_TOKEN is missing", async () => {
+  it("throws when TWILIO_AUTH_TOKEN is missing", () => {
+    vi.stubEnv("TWILIO_ACCOUNT_SID", "test-sid");
     vi.stubEnv("TWILIO_AUTH_TOKEN", "");
-    await expect(() => import("./twilioClient")).rejects.toThrow(
+    vi.stubEnv("TWILIO_FROM_NUMBER", "+15551234567");
+
+    expect(() => loadTwilioConfig()).toThrow(
       "Required environment variable TWILIO_AUTH_TOKEN is not set.",
     );
   });
 
-  it("throws when TWILIO_FROM_NUMBER is missing", async () => {
+  it("throws when TWILIO_FROM_NUMBER is missing", () => {
+    vi.stubEnv("TWILIO_ACCOUNT_SID", "test-sid");
+    vi.stubEnv("TWILIO_AUTH_TOKEN", "test-token");
     vi.stubEnv("TWILIO_FROM_NUMBER", "");
-    await expect(() => import("./twilioClient")).rejects.toThrow(
+
+    expect(() => loadTwilioConfig()).toThrow(
       "Required environment variable TWILIO_FROM_NUMBER is not set.",
     );
   });
 });
 
 describe("TwilioClient.startCall", () => {
-  beforeEach(() => {
-    vi.stubEnv("TWILIO_ACCOUNT_SID", "test-sid");
-    vi.stubEnv("TWILIO_AUTH_TOKEN", "test-token");
-    vi.stubEnv("TWILIO_FROM_NUMBER", "+15551234567");
-  });
-
   afterEach(() => {
-    vi.unstubAllEnvs();
-    vi.resetModules();
     vi.clearAllMocks();
   });
 
   it("creates a call and returns the sid", async () => {
     mockCreate.mockResolvedValue({ sid: "CA123" });
-    const { TwilioClient } = await import("./twilioClient");
-    const client = new TwilioClient();
+    const client = new TwilioClient({
+      accountSid: "test-sid",
+      authToken: "test-token",
+      fromNumber: "+15551234567",
+    });
 
     const sid = await client.startCall("5551234567");
 
@@ -76,8 +87,11 @@ describe("TwilioClient.startCall", () => {
 
   it("passes sendDigits when dtmfSequence is provided", async () => {
     mockCreate.mockResolvedValue({ sid: "CA456" });
-    const { TwilioClient } = await import("./twilioClient");
-    const client = new TwilioClient();
+    const client = new TwilioClient({
+      accountSid: "test-sid",
+      authToken: "test-token",
+      fromNumber: "+15551234567",
+    });
 
     const sid = await client.startCall("5551234567", "1,2,3");
 
@@ -92,22 +106,17 @@ describe("TwilioClient.startCall", () => {
 });
 
 describe("TwilioClient.endCall", () => {
-  beforeEach(() => {
-    vi.stubEnv("TWILIO_ACCOUNT_SID", "test-sid");
-    vi.stubEnv("TWILIO_AUTH_TOKEN", "test-token");
-    vi.stubEnv("TWILIO_FROM_NUMBER", "+15551234567");
-  });
-
   afterEach(() => {
-    vi.unstubAllEnvs();
-    vi.resetModules();
     vi.clearAllMocks();
   });
 
   it("updates the call status to completed", async () => {
     mockUpdate.mockResolvedValue(null);
-    const { TwilioClient } = await import("./twilioClient");
-    const client = new TwilioClient();
+    const client = new TwilioClient({
+      accountSid: "test-sid",
+      authToken: "test-token",
+      fromNumber: "+15551234567",
+    });
 
     await client.endCall("CA123");
 
