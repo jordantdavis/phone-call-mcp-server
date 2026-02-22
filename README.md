@@ -32,11 +32,12 @@ Ends an active phone call by its call ID.
 ## Install in Claude Code
 
 ```sh
-claude mcp add --transport stdio \
+claude mcp add phone-call \
+  --transport stdio \
   --env TWILIO_ACCOUNT_SID=your_sid \
   --env TWILIO_AUTH_TOKEN=your_token \
   --env TWILIO_FROM_NUMBER=your_number \
-  phone-call -- npx github:jordantdavis/phone-call-mcp-server
+  -- npx github:jordantdavis/phone-call-mcp-server
 ```
 
 ## Development
