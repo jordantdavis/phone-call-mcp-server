@@ -1,8 +1,18 @@
 import twilio from "twilio";
 
-const accountSid = requireEnv("TWILIO_ACCOUNT_SID");
-const authToken = requireEnv("TWILIO_AUTH_TOKEN");
-const fromNumber = requireEnv("TWILIO_FROM_NUMBER");
+export interface StartCallClient {
+  startCall(phoneNumber: string, dtmfSequence?: string): Promise<string>;
+}
+
+export interface EndCallClient {
+  endCall(callId: string): Promise<void>;
+}
+
+interface TwilioClientConfig {
+  accountSid: string;
+  authToken: string;
+  fromNumber: string;
+}
 
 function requireEnv(key: string): string {
   const value = process.env[key];
@@ -12,11 +22,21 @@ function requireEnv(key: string): string {
   return value;
 }
 
-export class TwilioClient {
-  private client: ReturnType<typeof twilio>;
+export function loadTwilioConfig(): TwilioClientConfig {
+  return {
+    accountSid: requireEnv("TWILIO_ACCOUNT_SID"),
+    authToken: requireEnv("TWILIO_AUTH_TOKEN"),
+    fromNumber: requireEnv("TWILIO_FROM_NUMBER"),
+  };
+}
 
-  constructor() {
-    this.client = twilio(accountSid, authToken);
+export class TwilioClient implements StartCallClient, EndCallClient {
+  private client: ReturnType<typeof twilio>;
+  private fromNumber: string;
+
+  constructor(config: TwilioClientConfig) {
+    this.client = twilio(config.accountSid, config.authToken);
+    this.fromNumber = config.fromNumber;
   }
 
   async startCall(phoneNumber: string, dtmfSequence?: string): Promise<string> {
@@ -24,7 +44,7 @@ export class TwilioClient {
 
     const call = await this.client.calls.create({
       to: phoneNumber,
-      from: fromNumber,
+      from: this.fromNumber,
       url: "http://twimlets.com/holdmusic?Bucket=com.twilio.music.ambient",
       ...(sendDigits && { sendDigits }),
     });
